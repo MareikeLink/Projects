@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Timeline Visualization of Movies as Events</title>
+    <script src="d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/1.13.0/d3-legend.js"></script>
+    <style>
+        body {
+            margin: 50px;
+            font-family: Arial;
+        }
+
+
+    </style>
+</head>
+<body>
+    <p>Mareike Link</p>
+	<h1>Timeline Visualization of Movies as Events</h1>
+    <p>Graded Homework Assignment 02</p>
+    <p>Lecture <i> Grundlagen der Informationsvisualisierung</i> , University of Bamberg, summer semester 2023</p>
+    <div id="directordiv"></div>
+    <svg id="visSvg"></svg>
+
+    <h2>Observed Insights:</h2>
+
+    <ul>
+        <li>The worldwide gross seems to grow over time, rather later films achieve higher numbers. Howether the values differ,
+            so that there is no positive correlation, only a tendency. 
+            <br> It shows no correlation to the Rotten Tomatoes Rating.</li>
+        <li>The number of directing films condenses over time for most directors. Comparatively the most films were produced between 1998 and 2008.
+            <br> However, the data points should 
+            probably be viewed with caution, as it seems unrealistic for directors to make films for over 70 years.</li>
+
+    </ul>
+    </ul>
+
+    <h2>Comments or Explanations:</h2>
+
+    <p>
+    I created this using Visual Studio Code and the Google Chrome browser. <br>
+    There seems to be a mistake, since there a movies that are appear in the future, whereas the data set is from 2010<br>
+    Due to this reason I ignore the years after that while describing the insights. <br>
+    Films that do not contain values for the worldwide gross don't appear in this visualization. <br>
+    There no currency specified for the worldwide gross within the data set. <br>
+    The most frequent "director" is a zero value.
+    <br>To exclude films to which no director is assigned, 
+        the second to sixth most common directors are selected.<br> <br>
+    <!--I created a mouseover event that partly works (code line 377 ff, it appears at the bottom of the page), but if I uncomment it, the legend disappears.
+    -->
+    </p>
+
+    <h2>References</h2>
+
+    <ul>
+        <li><a href="https://stackoverflow.com/questions/19980581/d3-js-parsing-date-error-with-csv-file">Parsing Date</a></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach">Counting</a></li>
+        <li><a href="https://stackoverflow.com/questions/70751555/count-how-many-occurrences-of-a-word-are-there-in-csv-file">Counting</a></li>
+        <li><a href="https://www.w3schools.com/js/js_arrays.asp">Arrays</a></li>
+        <li><a href="https://www.w3schools.com/js/js_array_iteration.asp">Arrays Iteration</a></li>
+        <li><a href="https://d3-legend-v3.susielu.com/#color">Legend</a></li>
+        <li><a href="https://d3-graph-gallery.com/graph/custom_legend.html#circle-legend">Legend</a></li>
+        <li><a href="https://vanseodesign.com/web-design/svg-markers/">Arrow</a></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/marker">Arrow</a></li>
+        <li><a href="https://www.tutorialsteacher.com/d3js/data-binding-in-d3js">Data Binding</a></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/line">Lines</a></li>
+        <li><a href="https://www.mediaevent.de/tutorial/svg-text-alignment.html">Text</a></li>
+        <li><a href="https://stackoverflow.com/questions/25168086/sorting-objects-based-on-property-value-in-d3">Sorting</a></li>
+        <li><a href="https://forum.freecodecamp.org/t/sorting-a-converted-object-object-entries/279777">Sorting</a></li>
+        <li><a href="https://stackoverflow.com/questions/24768492/why-does-points-sortfunctiona-breturn-a-b-return-1-0-or-1">Sorting</a></li>
+        <li><a href="https://www.d3indepth.com/scales/">Scales</a></li>
+        <li><a href="https://github.com/d3/d3-scale">Scales</a></li>
+        <li><a href="https://d3js.org/">General</a></li>
+        <li><a href="https://gist.github.com/mbostock/4163057">General</a></li>
+        <li><a href="https://github.com/d3/d3-axis">Axis</a></li>
+        <li><a href="https://stackoverflow.com/questions/75391998/best-way-to-dynamically-style-svg-marker-elements">Marker</a></li>
+        <li><a href="https://www.w3schools.com/colors/colors_names.asp">Colors</a></li>
+        <li><a href="https://medium.com/@kj_schmidt/show-data-on-mouse-over-with-d3-js-3bf598ff8fc2">Mouseover</a></li>
+        <li><a href="https://stackoverflow.com/questions/31641542/adding-mouseover-event-to-a-javascript-created-div">Mouseover</a></li>
+        <li><a href="https://chartio.com/resources/tutorials/how-to-show-data-on-mouseover-in-d3js/">Mouseover</a></li>
+    </ul>
+</body>
+<script>
+    window.onload = function(){
+        // Please feel free to modify any part of the code in the template, if it helps in coding your solution.
+        // For instance, converting the data type of individual attributes while loading the csv data file.
+        d3.csv("movies.csv")
+            .then(function(csvData){
+            /* Layout constants */
+            //I changed the width
+            var width = 1400,
+            //I changed the heigth
+                height = 500;
+
+            /* Initialization of SVG graphics */
+            var svg = d3.select("#visSvg")
+                .attr("width", width)
+                .attr("height", height);
+            
+
+            //***Directors List***
+
+           console.log(csvData);
+            //Your code goes here
+
+            //create variable to hold directors 
+            var directors ={}
+
+            //count how often directors are mentioned in list
+            //for every director element in the list it is checked whether it's mentioned again 
+            //if yes, then it counts up, if not, then it stays 1
+            //accesses list, case sensitive! -> "Director"
+            csvData.forEach (function(d) {
+                var Director = d.Director;
+                if (directors[Director]) {
+                    directors[Director]+1;
+                }else {
+                    directors[Director] = 1;
+                }
+            });
+            
+            //sorting directors in terms of frequency, using variable directors
+            //variable contains name and count ...confusing
+            //sorts in terms of count value
+            var frequentDirectors = Object.entries(directors)
+                .sort(function(a,b) {
+                    return b[1]-a[1];
+                })
+                //cut after first 16
+                //exclude movies that have no director in list by excluding 0 = not mentioned 
+                .slice(1,16)
+
+            //to test and see element in browser console
+            console.log(frequentDirectors[0][0]);
+
+            //plot directors list
+            var directorsList = svg.selectAll("text")
+                //.selectAll("p")
+                .data(frequentDirectors)
+                .enter()
+                .append("text")
+                .attr("x", 200)
+                .attr("y", function(d,i) {
+                    return i*35+30;
+                })
+                //alignment
+                .attr("text-anchor", "end")
+                .attr("alignment-baseline", "central")
+                .text(function (d) {
+                    return d[0];
+                });
+
+            //plot lines for each director
+            var lines = svg.selectAll("line")
+                .data(frequentDirectors)
+                .enter()
+                .append("line")
+                //not same value as text alignment - space
+                .attr("x1", 210)
+                .attr("x2", 960)
+                .attr("y1", function(d,i) {
+                    return i*35+30;
+                })
+                .attr("y2", function(d,i) {
+                    return i*35+30;
+                })
+                .attr("stroke", "black");
+
+            
+            //***Timeline***
+
+            /*set domain for scale
+            var minDate = d3.min(csvData, function(d) { return d.releaseDate; });
+            var maxDate = d3.max(csvData, function(d) { return d.releaseDate; });
+            */
+
+            //parse date to gain years only
+            //%b because months are written
+            var parseDate = d3.timeParse("%b %d %Y");
+            csvData.forEach(function(d) {
+                d.releaseDate = parseDate(d["Release Date"]);
+                });
+
+            //set domain for timeline
+            var minYear = d3.min(csvData, function(d) { return d.releaseDate.getFullYear(); });
+            var maxYear = d3.max(csvData, function(d) { return d.releaseDate.getFullYear(); });
+
+            //define space between years on timeline
+            var uniqueYears = d3.range(minYear, maxYear + 1, 10);
+
+            //actuale scale: creates connection between time and place on page
+            var timeScale = d3.scaleTime()
+                .domain([d3.min(csvData, d => d.releaseDate), d3.max(csvData, d => d.releaseDate)])
+                //why does 210 not work here?
+                .range([216, 960]);
+            
+            //years as written numbers with defined space between them
+            //why do I need to define a new class here?
+            var yearsText = svg.selectAll("yearText")
+                .data(uniqueYears)
+                .enter()
+                .append("text")
+                .attr("class", "yearText")
+                //find position of data value on timeline and create new object
+                //d= year, 0 -> first month, 1 -> first day, only year shows, since I parsed date
+                .attr("x", function(d) {
+                    return timeScale(new Date(d, 0, 1) );
+                })
+                .attr("y", 20)
+                .attr("text-anchor", "middle")
+                .attr("alignment-baseline", "middle")
+                //write every 10th year of the range
+                .text(function(d) {
+                    return d;
+                });
+                
+            //visible timeline - black line
+            var timelineLine = svg
+                .append("line")
+                .attr("x1", 210)
+                .attr("x2", 960)
+                //y=5 s.t. vertical lines can cross them
+                .attr("y1", 5)
+                .attr("y2", 5)
+                .style("stroke", "black")
+                .style("stroke-width", 1.5);
+
+            //vertical lines to mark exact position of years
+            var yearMarkers = svg
+                .selectAll(".yearMarker")
+                .data(uniqueYears)
+                .enter()
+                .append("line")
+                .attr("class", "yearMarker")
+                .attr("x1", function(d) {
+                    return timeScale(new Date(d, 0, 1));
+                })
+                .attr("x2", function(d) {
+                    return timeScale(new Date(d, 0, 1));
+                })
+                //length s.t. vertical lines cross them in the middle
+                .attr("y1", 0)
+                .attr("y2", 10)
+                .style("stroke", "black")
+                .style("stroke-width", 1.5);
+
+            //Add arrowhead: create rectangle
+            svg.append("marker")
+                .attr("id", "arrow")
+                //x,y,width,heigth - copied from web source
+                .attr("viewBox", "0 0 10 10")
+                //x-position:
+                .attr("refX", 8)
+                //according to line
+                .attr("refY", 5)
+                .attr("markerWidth", 8)
+                .attr("markerHeight", 6)
+                //direction
+                .attr("orient", "right")
+                .append("path")
+                //shape via path (copied from web source)
+                .attr("d", "M 0 0 L 10 5 L 0 10 z") 
+
+            //add arrow "head" to timeline afterwards
+            timelineLine.attr("marker-end", "url(#arrow)");
+
+
+            //***Data Points***
+
+            //scale for directors axis
+            var directorsScale = d3.scaleOrdinal()
+                .domain([csvData.map((d) => d.Director)])
+                //hard coded, according to space between lines of directorsList
+                .range([30,65,100,135,170,205,240,275,310,345,380,415,450,485,520]);
+
+            console.log(directorsScale("Christopher Nolan"));
+            console.log([csvData]);
+            console.log([directorsScale()]);
+
+
+            //***Glyphs for films***
+
+            //worldwide gross scale for size
+            var grossScale = d3.scaleLinear()
+                .domain([d3.min(csvData, d => d["Worldwide Gross"]), d3.max(csvData, d => d["Worldwide Gross"])])
+                .range([2, 3]);
+
+            //rotten tomatoe scale for border size
+            var tomatoeScale = d3.scaleLinear()
+                .domain([d3.min(csvData, d => d["Rotten Tomatoes Rating"]), d3.max(csvData, d => d["Rotten Tomatoes Rating"])])
+                .range([0, 5]);
+
+            //scale color for genre
+            /*var ordinal = d3.scale.ordinal()
+                .domain(["Comedy", "Adventure", "Horror", "Thriller/Suspense", "Drama"])
+                .range([ "yellow", "orange", "blue", "magenta", "brown"]);
+                */
+            
+            //glyphs: circles
+            var titleGlyphs = svg.selectAll("circle")
+                .data(csvData)
+                .enter()
+                .append("circle")
+                //
+                .attr("cx", function(d) { 
+                    return timeScale(d.releaseDate);
+                }
+                )
+                .attr("cy", function(d){
+                    return directorsScale(d.Director);
+
+                })
+                //size according to worldwide gross
+                .attr("r", function(d) {
+                    return grossScale(d["Worldwide Gross"]);
+                    })
+                //color according to genre
+                .style("fill", function(d) {
+                    if (d["Major Genre"] == "Action") {
+                        return "yellow";
+                    } else if (d["Major Genre"] == "Adventure") {
+                        return "orange";
+                    } else if 
+                        (d["Major Genre"] == "Based on Book") {
+                        return "red";
+                    } else if 
+                        (d["Major Genre"] == "Black Comedy") {
+                        return "pink";
+                    } else if 
+                        (d["Major Genre"] == "Comedy") {
+                        return "darkmagenta";
+                    } else if 
+                        (d["Major Genre"] == "Documentary") {
+                        return "cyan";
+                    } else if 
+                        (d["Major Genre"] == "Drama") {
+                        return "mediumpurple";
+                    } else if 
+                        (d["Major Genre"] == "Horror") {
+                        return "midnightblue";
+                    } else if 
+                        (d["Major Genre"] == "Musical") {
+                        return "saddlebrown";
+                    } else if 
+                        (d["Major Genre"] == "Original Screenplay") {
+                        return "lightgreen";
+                    } else if 
+                        (d["Major Genre"] == "Romantic") {
+                        return "black";
+                } else if 
+                        (d["Major Genre"] == "Thriller/Suspense") {
+                        return "salmon";
+                } else if 
+                        (d["Major Genre"] == "Western") {
+                        return "darkgreen";
+                } else if 
+                        (d["Major Genre"] == "Romantic Comedy") {
+                        return "magenta";
+                }
+                else {
+                    return "powderblue";
+                }
+                }) 
+                /*
+                .style("fill", function(d){
+                    return ordinal(d)["Comedy", "Adventure", "Horror", "Thriller/Suspense", "Drama"]
+                })
+                */
+                .style("opacity", "0.5")
+                //border according to rotten tomatoe ratings
+                .style("stroke", "dimgrey") 
+                .style("stroke-width", function(d) {
+                        return tomatoeScale(d["Rotten Tomatoes Rating"]); + "px";
+                        })
+
+
+                //***Mouseover***
+                
+                //if activated -> legend disappears
+
+                /*
+                .on("mouseover", function(d) {
+                    //Define mouseover variables
+                    var title = d["Title"];
+                    var worldwideGross = d["Worldwide Gross"];
+                    var rottenTomatoe = d["Rotten Tomatoes Rating"];
+
+                    // Create a div element for displaying the movie information
+                    var mouseoverDiv = d3.select("body")
+                        .append("div")
+                        .attr("class", "movie-info");
+
+                    // write information from data set into div
+                    mouseoverDiv.html(`
+                        <p>Title: ${d["Title"]}</p>
+                        <p>Worldwide Gross: ${d["Worldwide Gross"]}</p>
+                        <p>Rotten Tomatoe Rating: ${d["Rotten Tomatoes Rating"]}</p>
+                    `);
+                })
+                //create mouseout
+                .on("mouseout", function() {
+                 d3.select(".movie-info").remove();
+                 });
+
+                 console.log(data);
+                 */
+                 
+                
+                
+            titleGlyphs.raise();
+
+            //Legend via cdnjs d3-legend
+
+            // Define the color scale for the genres
+            /*var colorScale = d3.scaleOrdinal()
+                .domain(["Action", "Adventure", "Based on Book", "Black Comedy", "Comedy", "Documentary", "Drama", "Horror", "Musical", "Original Screenplay", "Romantic", "Thriller/Suspense", "Western", "Romantic Comedy"])
+                .range(["yellow", "orange", "red", "pink", "darkmagenta", "cyan", "mediumpurple", "midnightblue", "saddlebrown", "lightgreen", "black", "salmon", "darkgreen", "magenta"]);
+                */
+            // Create the legend explaining the colors
+            /*var legend = d3.legend.color()
+                .scale(colorScale)
+                .shape("circle")
+                .shapePadding(10)
+                .shapeRadius(5)
+                .labelAlign("start");
+
+            // Append the legend to the SVG
+            svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", "translate(210, 610)")  // Adjust the position as needed
+                .call(legend);
+
+            */
+
+            //***Legend colors according to genre***
+
+            svg.append("text")
+                .attr("x", "980")
+                .attr("y", "10")
+                .attr("font-size", "14px")
+                .attr("fill", "black")
+                .text("Genres:");
+
+            var svg = d3.select("svg");
+            
+            //define colors for genres manually
+            var genreColors = {
+                "Action": "yellow",
+                "Adventure": "orange",
+                "Based on Book": "red",
+                "Black Comedy": "pink",
+                "Comedy": "darkmagenta",
+                "Documentary": "cyan",
+                "Drama": "mediumpurple",
+                "Horror": "midnightblue",
+                "Musical": "saddlebrown",
+                "Original Screenplay": "lightgreen",
+                "Romantic": "black",
+                "Thriller/Suspense": "salmon",
+                "Western": "darkgreen",
+                "Romantic Comedy": "magenta",
+                "others" : "powderblue"
+                };
+
+            //construct legend
+            var legend = svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", "translate(980, 18)");
+
+            //define legend items
+            var legendItems = legend.selectAll(".legend-item")
+                .data(Object.entries(genreColors))
+                .enter()
+                .append("g")
+                .attr("class", "legend-item")
+                .attr("transform", function(d, i) {
+                    return "translate(0," + i * 20 + ")";
+                });
+            
+                legendItems.append("circle")
+                .attr("cx", 5)
+                .attr("cy", 6)
+                .attr("r", 5)
+                .style("opacity", "0.4")
+                .style("fill", function(d) {
+                    return d[1];
+                });
+
+            legendItems.append("text")
+                .attr("x", 15)
+                .attr("y", 6)
+                //this changes the position of the text 
+                .attr("dy", "2")
+                .text(function(d) {
+                    return d[0];
+                });
+
+
+            //***Legend Rotten Tomatoes Border***
+
+            svg.append("text")
+                .attr("x", 980)
+                .attr("y", 332)
+                .attr("font-size", "14px")
+                .attr("fill", "black")
+                .text("Rotten Tomatoes Ratings 0 - 100:");
+
+            var legendBorder = svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", "translate(980, 345)");
+
+            //glyphs - border of circles
+            var legendCircles = legendBorder.selectAll(".legend-circle")
+                .data([1, 100]) 
+                .enter()
+                .append("circle")
+                .attr("class", "legend-circle")
+                .attr("cx", 10)
+                .attr("cy", function(d, i) { return i * 20; })
+                .attr("r", 5)
+                .style("fill", "none")
+                .style("opacity", "0.5")
+                .style("stroke", "grey")  
+                .style("opacity", "0.5")
+                .style("stroke-width", function(d) { return tomatoeScale(d); }); 
+
+            //values
+            var legendText = legendBorder.selectAll(".legend-text")
+                .data([1, 100])  
+                .enter()
+                .append("text")
+                .attr("class", "legend-text")
+                .attr("x", 20)
+                .attr("y", function(d, i) { return i * 20 + 5; })
+                .text(function(d) { return d; });
+
+
+            //***Legend circle size ***
+            svg.append("text")
+                .attr("x", "980")
+                .attr("y", "402")
+                .attr("font-size", "14px")
+                .attr("fill", "black")
+                .text("Worldwide Gross 0 - 2.767.891.499:");
+
+                var legendSize = svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", "translate(980, 415)");
+
+            //glyphs - cirles in different sizes
+            var legendCircles = legendSize.selectAll(".legend-circle")
+                //manually from data set
+                .data([1, 2767891499]) 
+                .enter()
+                .append("circle")
+                .attr("class", "legend-circle")
+                .attr("cx", 10)
+                .attr("cy", function(d, i) { return i * 40; })
+                .attr("r", function(d) { return grossScale(d); })
+                .style("fill", "powderblue")
+                .style("opacity", "0.5")
+
+            //values
+            var legendText = legendSize.selectAll(".legend-text")
+                //manually from data set
+                .data([1, 2767891499]) 
+                .enter()
+                .append("text")
+                .attr("class", "legend-text")
+                .attr("x", 20)
+                .attr("y", function(d, i) { return i * 40 + 5; })
+                .text(function(d) { return d; });
+
+    });
+
+    };
+
+</script>
+
+</html>
