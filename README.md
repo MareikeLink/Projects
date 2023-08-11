@@ -1,5 +1,4 @@
 ## uni-projects
-Cool projects that I created during my university career. More information can be found in a README in each folder. 
-
+Project portfolio I created during my time at University of Bamberg.
 ## author
-Maria Zieglmeier
+Mareike Link
